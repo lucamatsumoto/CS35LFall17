@@ -1,0 +1,106 @@
+Luca Matsumoto CS35L Fall 2017
+
+1. Use the command man -k keyword where the keyword is the word you would like
+to search. By typing the command man man, we see a manual page of the man
+command. Scrolling down, we see that man -k prints all commands with the
+specific keyword.
+
+2. Cp is located in /usr/bin/cp and wc is located in /usr/bin/cp. We can use the
+which command to see where programs are located in the file systems.
+
+3. There are four single character commands:
+
+':' -  No effect; the command does nothing beyond  expanding  arguments and
+performing any specified redirections. A zero exit code is returned. 
+'.' - Read and execute commands from filename in the current shell environment. 
+'w' - Displays information about the users currently on the machine, and their
+processes. The header shows, in this order,  the  current  time, how  long  the
+system  has  been running, how many users are currently logged on, and the
+system load averages for the past 1, 5, and 15  minutes. 
+'[' - Evaluates a conditional expression
+
+These one character commands were found by running the command find /usr/bin
+-name "?", giving a list of all of the one character commands. /usr/bin/X was an
+option, but after running the command man X, no entries were found. All of the
+descriptions are taken from running man on the command name found.
+
+4. First, we used the command cd /usr/bin to change the directory. We then
+search the folder to see anything containing the word "emacs" by using the
+command ls -l | grep emacs. We see that the symbolic link /usr/bin/emacs
+actually executes the file /etc/alternatives/emacs
+
+5. Because g stands for groups in /users/groups, g+s changes the access
+permissions that other users in the file group have and also sets the user or
+group ID on execution. The letter O stands for other, meaning that o-x removes
+the executable permission for others on the specified file
+
+6. Looking at the man pages of the find command, we see that the option -ctime
+evaluates the the difference between the time of last change of file status
+information and the time find was started is exactly n units. Here, n is the
+number of days where the unit of time is n*24 hours. Therefore, in order to find
+files modified in the last three weeks, we run the command find -ctime -21
+
+7. Find / type -d -ctime -21 command finds all of the files that were opened or
+modified within the last three weeks (21 days)
+
+8. Using the which find command, we find the directory at which find is located.
+(/usr/bin/find) Using the command, find /usr/bin -type l | wc -l, we are
+given the number of symbolic links in the same directory as find, which is 293,
+on lnxsrv09. 
+
+9. By looking at the man pages for the ls command, we see tha the option -t
+sorts by the time modified so we can use the command ls -lt in the /usr/lib
+directory (change by using cd /usr/lib) and then pipeline it with the grep ^-
+command (regular expressions) since the file must begin with a - to get a list
+of regular files in the directory. The oldest regular file in that directory is
+-rwxr-xr-x   1 root root   18692 Jan 26  2014 libgpg-error.so.0.10.0 
+Command: ls -lt | grep '^-' 
+(libgpg-error.so.0.10)
+
+10. By looking at the man pages for locale, (command: man locale), we see under
+the "standards" section that the locale utility gets its data from IEEE Std
+1003.1-2001 (``POSIX.1'').
+
+11.  
+Command: C-h a sort, C-x o to switch to apropos 
+
+1) Buffer-menu sort
+2) sort-columns
+3) sort-fields
+4) sort-lines
+5) sort-numeric-fields
+6) sort-pages
+7) sort-paragraphs
+8) sort-regexp-fields
+9) tabulated-list-col-sort
+10) tabulated-list-sort
+
+
+
+12.
+C-M-a: Move to beginning of the current or preceding defun (beginning-of-defun) 
+C-M-b: Move backward over a balanced expression (backward-sexp) 
+C-M-c: Exit the recursive edit (exit-recursive-edit) 
+C-M-d: Move forward down one level of parentheses (down-list) 
+C-M-e: Move to the end of current or following defun (end-of-defun) 
+C-M-f: Move forward over a balanced expression (backward-sexp)
+C-M-g: Does not exist 
+C-M-h: Put region around whole current or following defun (mark-defun)
+
+13. C-g runs the command keyboard quit - this is lisp function that cancels the
+current command (abort)
+
+14. The command yank is bounded to C-y and pastes the last stretch of killed
+text.  Found using command C-h f yank
+
+15.  Controls for dired (emacs): C-x C-f /usr/bin  Controls for ls -l: cd
+/usr/bin and ls -l
+
+Differences: Using a comparison tool, I realized that the only difference
+between dired and ls -l is that ls -l does not include the parent and current
+directories in the list but dired does. 
+
+
+
+
+

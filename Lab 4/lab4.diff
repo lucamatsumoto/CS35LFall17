@@ -1,0 +1,18 @@
+--- coreutils-with-bug/lib/timespec.h	2017-10-25 00:57:24.352389000 -0700
+2017-10-25  Ruka Matsumoto  <ruka@lnxsrv09.seas.ucla.edu>
+
+	* lib/timespec.h (timespec_cmp):
+	Eliminate integer overflow through addition or subtraction. 
+	Return 1 if a.tv_sec > b.tv_sec, -1 if a.tv_sec < b.tv_sec and 0 if equal
+
++++ timespec.h	2017-10-25 01:03:21.434561000 -0700
+@@ -45,8 +45,7 @@
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = a.tv_sec - b.tv_sec;
+-  return diff ? diff: a.tv_nsec - b.tv_nsec;
++  return a.tv_sec < b.tv_sec ? 1: (a.tv_sec > b.tv_sec ? -1: a.tv_sec - b.tv_sec);
+ }
+ 
+ # if ! HAVE_DECL_NANOSLEEP

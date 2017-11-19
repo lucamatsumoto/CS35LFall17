@@ -1,0 +1,135 @@
+Luca Matsumoto  CS35L Lab 4
+
+For this lab, we want to reproduce bugs on a buggy ls command.
+
+First log into the linux servers by using the command and entering the password: ssh ruka@lnxsrv09.seas.ucla.edu
+
+We download the tar file into our local Desktop directory and then copy the file into our home linux server directory
+with the command: scp coreutils-with-bug.tar.gz ruka@lnxsrv09.seas.ucla.edu:~
+
+Then unzip the tar with the command: tar -xvzf coreutils-with-bug.tar.gz, which creates a new directory with the  buggy
+coreutils.
+
+We then configure and compile with the ./configure and make commands in the new coreutils-with-bugs directory
+
+However, this produces an error:
+
+In file included from utimecmp.c:41:0: utimens.h:2:5: error: conflicting types for 'futimens'  int futimens (int, char
+const *, struct timespec const [2]);      ^ In file included from utimecmp.h:25:0,                  from utimecmp.c:25:
+/usr/include/sys/stat.h:373:12: note: previous declaration of 'futimens' was  here extern int futimens (int __fd, const
+struct timespec __times[2]) __THROW;             ^ make[3]: *** [utimecmp.o] Error 1 make[3]: Leaving directory
+`/w/home.15/cs/ugrad/ruka/coreutils-with-bug/lib' make[2]: *** [all] Error 2 make[2]: Leaving directory
+`/w/home.15/cs/ugrad/ruka/coreutils-with-bug/lib' make[1]: *** [all-recursive] Error 1 make[1]: Leaving directory
+`/w/home.15/cs/ugrad/ruka/coreutils-with-bug' make: *** [all] Error 2
+
+In order to fix this error, we must apply the patch that is given from the page.
+
+wget http://web.cs.ucla.edu/classes/fall17/cs35L/assign/coreutils.diff: to  create a file called coreutils.diff (patch)
+in the directory with the bug.
+
+We then use the patch command to apply the patch. We use the -p0 option because we want to leave the entire file name
+(path) unmodified.  (/u/cs/ugrad/ruka/coreutils-with-bug) patch -p0 < coreutils.diff
+
+We then use the make command to recompile. make
+
+This time, we have no errors that are outputted.
+
+Use the commands given on the page to create a temporary directory and  three files with different time stamps.
+
+tmp=$(mktemp -d) cd $tmp touch -d '1918-11-11 11:00 GMT' wwi-armistice touch now sleep 1 touch now1 ~/coreutils-with-
+bugs/src/ls -lt --full-time wwi-armistice now now1
+
+this outputs the following -rw-r--r-- 1 ruka csugrad 0 1918-11-11 03:00:00.000000000 -0800 wwi-armistice -rw-r--r-- 1
+ruka csugrad 0 2017-10-24 15:37:31.122594402 -0700 now1 -rw-r--r-- 1 ruka csugrad 0 2017-10-24 15:36:44.566824499 -0700
+now
+
+Because the -t command sorts the files from newest to oldest, this is incorrect, as the first file display is clearly
+the oldest, and not the newest.
+
+We will use gdb to debug the program and find out where the program goes wrong.
+
+Use the command, gdb ~/coreutils-with-bug/src/ls to open gdb with the buggy src/ls directory
+
+Using the GDB command, info functions, we see a list of functions. Three of the functions, compare_atime, compare_ctime,
+and compare_mtime.
+
+atime represents file access time, ctime represents file change time, and mtime represents file modify time. In this
+case, we want to look at the file modify time, so therefore we will set a breakpoint at compstr_mtime break
+compare_mtime
+
+We then run in GDB using the command, r -lt  because we want to find the bug with the -t option
+
+Breakpoint 1, compare_mtime (a=0x6170b0, b=0x617160) at ls.c:2884 2884     static int compare_mtime (V a, V b) { return
+cmp_mtime (a, b, xstrcoll); }
+
+To view the source code, we use the command list (gdb)list
+
+    { 2880      int diff = timespec_cmp (get_stat_mtime (&b->stat), 2881                   get_stat_mtime (&a->stat));
+2882      return diff ? diff : cmp (a->name, b->name); 2883    } 2884  static int compare_mtime (V a, V b) { return
+cmp_mtime (a, b, xstrcoll); } 2885  static int compstr_mtime (V a, V b) { return cmp_mtime (a, b, strcmp); } 2886
+static int rev_cmp_mtime (V a, V b) { return compare_mtime (b, a); } 2887  static int rev_str_mtime (V a, V b) { return
+compstr_mtime (b, a); } 2888
+
+(output adjusted to fit 80 columns)
+
+From this output, we see that the line  int diff = timespec_cmp (get_stat_mtime (&b->stat), get_stat_mtime (&a->stat));
+could be a problem.
+
+We then step into the code to see what the function timespec_cmp and then view its code. (gdb)si (gdb)list
+
+44     Assume the nanosecond components are in range, or close to it.  */ 45  static inline int 46  timespec_cmp (struct
+timespec a, struct timespec b) 47  { 48    int diff = a.tv_sec - b.tv_sec; 49    return diff ? diff : a.tv_nsec -
+b.tv_nsec; 50  }
+
+From here, it is evident that in the line, int diff = a.tv_sec - b.tv_sec,  overflow could occur which causes incorrect
+results to be outputted. If the  value of a.tv_sec is extremely small (or the value of b.tv_sec is extremely big) , then
+we may have a problem with overflow.
+
+Exit out of gdb by using (gdb)quit
+
+From our coreutils-with-bug/lib directory, where timespec.h is stored, we copy  the file so that we have two copies, one
+that will be modified and one that will not.
+
+cp timespec.h ../../timespec.h to copy timespec.h into our home directory
+
+emacs timespec.h so that we can edit our file
+
+For this, if a.tv_sec < b.tv_sec, we must return a negative value (-1),  if a.tv_sec > b.tv_sec, we must return a
+positive value (1),  and otherwise, return a.tv_sec - b.tv_sec (0)
+
+Therefore, we can write the following code in timespec.h
+
+return a.tv_sec < b.tv_sec ? 1: (a.tv_sec > b.tv_sec ? -1: a.tv_sec - b.tv_sec);
+
+We change this in our copied version of timespec.h under the home directory We then use the diff -u command to create a
+patch for the buggy version
+
+diff -u coreutils-with-bug/lib/timespec.h timespec.h > lab4.diff
+
+We then use emacs to create a ChangeLog with the command C-x 4 a
+    
+    * lib/timespec.h (timespec_cmp):     Eliminate integer overflow through addition or subtraction.     Return 1 if
+a.tv_sec > b.tv_sec, -1 if a.tv_sec < b.tv_sec and 0 if equal
+
+Append this bit to the lab4.diff patch to create your ChangeLog (copy-paste)
+
+For the next part, we want to reproduce the problem on the SEASnet Linux servers home directory.
+
+cd ~ to change to home directory touch -d '1918-11-11 11:00 GMT' wwi-armistice touch now touch now1  to create the three
+files
+
+ls -lt wwi-armistice now now1 to see output This command outputs: -rw-r--r-- 1 ruka csugrad 0 Dec 17  2054 wwi-armistice
+-rw-r--r-- 1 ruka csugrad 0 Oct 25 01:21 now1 -rw-r--r-- 1 ruka csugrad 0 Oct 25 01:21 now
+
+Clearly, the date displayed on the wwi-armistice file is incorrect, as its time stamp is given as Dec 17 2054. This is
+because timestamps are represented as  seconds since Unix Epoch in 1970. The SEASnet NFS file system uses unsigned
+32-bit time stamps while the Local file system on Linux server has signed 32-bit stamps. This means that any time before
+the Unix Epoch gets added with a 64-bit extension, meaning that the year 1918 is displayed as 2054. In order for the
+correct date to be displayed, files must be touched on the local system (df -l).
+
+
+
+
+
+
+

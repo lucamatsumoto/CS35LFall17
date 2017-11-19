@@ -1,0 +1,95 @@
+Lab 
+
+We run the different versions of sfrob with different input files of different sizes.
+I typed the line "CS35L Fall 2017" multiple times in the file.
+
+For 10 input lines
+
+Command: time ./sfrob < input.txt
+
+real    0m0.002s
+user    0m0.001s
+sys 0m0.000s
+
+Command: time ./sfrobu < input.txt
+
+real    0m0.006s
+user    0m0.001s
+sys 0m0.000s
+
+For 250 input lines
+
+Command: time ./sfrob < input.txt
+
+real    0m0.003s
+user    0m0.001s
+sys 0m0.001s
+
+Command: time ./sfrobu < input.txt
+
+real    0m0.003s
+user    0m0.000s
+sys 0m0.002s
+
+For 1000 input lines
+
+Command: time ./sfrob < input.txt
+real    0m0.005s
+user    0m0.003s
+sys 0m0.002s
+
+Command: time ./sfrobu < input.txt
+real    0m0.007s
+user    0m0.003s
+sys 0m0.003s
+
+Using, the strace -o command and the wc -l command from earlier in the lab,
+we can estimate how many system calls are made.
+
+sfrob: for 250 lines -> 292 system calls and for 1000 lines -> 1084 system calls
+sfrobu: for 250 lines -> 539 system calls and for 1000 lines -> 2039 system calls
+
+For the buffered version of sfrob, it seems that there is a one to one linear relationship
+between the number of input lines and comparisons. This makes sense because the program
+is reading one byte at a time.
+
+comparison ~= lines
+
+For the unbuffered version of sfrob, for every input line, there seems to be two system calls 
+being made. 
+
+comparisons ~= 2*lines
+
+Use the time command to compare the results of sfrob, sfrobu, sfrobs, sfrobu -f, and sfrobs -f
+All using the same 1000 line file
+
+sfrob
+real    0m0.006s
+user    0m0.003s
+sys 0m0.002s
+
+sfrobu 
+real    0m0.008s
+user    0m0.003s
+sys 0m0.003s
+
+sfrobs
+real    0m0.008s
+user    0m0.007s
+sys 0m0.002s
+
+sfrobu -f
+real    0m0.010s
+user    0m0.006s
+sys 0m0.004s
+
+sfrobs -f
+real    0m0.010s
+user    0m0.006s
+sys 0m0.004s
+
+As seen by the data, the sfrob program is the fastest. The buffered program makes less system calls per line
+and therefore is a lot faster than the other ones. Additionally, we see that the -f slows down the sfrobu and sfrobs
+commands slightly. They also run at very similar speeds, with and without the options. 
+
+

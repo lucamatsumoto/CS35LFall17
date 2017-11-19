@@ -1,0 +1,51 @@
+#!/bin/bash
+
+DIR=$1 #first argument is represented by $1
+
+files=`find $DIR -maxdepth 1 -type f -name "[^.]*" -exec echo \"{}\" \; | sort` #maxdepth 1 only checks first directory
+hidden=`find $DIR -maxdepth 1 -type f -name ".*" -exec echo \"{}\" \; | sort`
+let count=0 #counter
+declare -a ARR #declare an array to store the files
+return="$IFS" 
+IFS=$'\n' #set the delimiter
+
+for H in $hidden
+do
+        if [ -r "`echo $H |tr -d '"'`" ] #if the file is  readable
+        then
+                ARR[$count]="$H"
+                let count=count+1
+        else
+                echo "the file $H cannot be read"
+        fi
+done
+
+for FILE in $files
+do
+        if [ -r "`echo $FILE |tr -d '"'`" ]
+        then
+                ARR[$count]="$FILE"
+                let count=count+1
+        else
+                echo "the file $FILE cannot be read"
+        fi
+done
+
+for ((i=0; i<$count; i++))
+do
+    if [ -n "${ARR[$i]}" ]
+    then
+        for((j=$i+1; j<$count; j++))
+        do
+            if [ -n "${ARR[$j]}" ]
+            then
+		if cmp -s "`echo ${ARR[$i]} |tr -d '"'`" "`echo ${ARR[$j]} |tr -d '"'`"
+		then
+        		ln -fP "`echo ${ARR[$i]} |tr -d '"'`" "`echo ${ARR[$j]} |tr -d '"'`"
+ 		       	ARR[$j]="" #clear so it wont check again
+		fi
+            fi
+        done
+   fi
+done
+IFS=$return

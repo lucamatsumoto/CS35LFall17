@@ -1,0 +1,104 @@
+Key Sequences for Homework Problems
+
+1.1: Moving around in Emacs 
+C-s p u b l i c 
+C-s L a b o r a t o r y M-b 
+C-s s e l f - M-b 
+C-s a r r o w M-b 
+C-e 
+C-a 
+C-x C-c
+
+1.2: Deleting text in Emacs
+
+M-g g 1 8  C-k 
+C-s < ! C-a C-k 
+C-s < ! C-a C-k C-k C-k C-k C-k 
+C-s < ! C-b C-b M-z > 
+C-s < ! C-a C-k 
+C-x C-c
+
+1.3: Inserting Text in Emacs 
+C-s A s s i g n m e n t SP 1 M-% A s s i g n m e n t SP 3 7 Enter y y 
+C-s U T F - 8 M-% U S - A S C I I Enter y 
+C-s < o l > C-a Enter
+C-x C-c
+
+1.4: Other editing tasks in Emacs 
+c a t e x e r 2 . h t m l e x e r 2 . d i f f  > e x e r 4 . h t m l
+M-> C-r - < RIGHT C-SP C-e M-w M-g M-g 3 5 3 Enter C-y  
+M-> C-r - < C-r RIGHT C-SP C-e M-w M-g M-g 3 3 8 Enter C-y C-k 
+M-> C-r - < C-r C-r RIGHT C-SP DOWN DOWN C-e M-w M-g M-g 3 0 3 Enter C-y
+M-> C-r - < C-r C-r C-r RIGHT C-SP C-e M-w M-g M-g 9 3 Enter C-y 
+M-> C-r - < C-r C-r C-r C-r RIGHT C-SP DOWN DOWN C-e M-w M-g M-g 1 8 Enter C-y 
+M-> C-r - - - C-r M-> C-w 
+C-x u 
+M-< C-s - - - C-s C-a C-o < ! - - M-% - - > Enter - - > < ! - - Enter y y y y y 
+M-> - - > M-< M-% < o l > Enter < O l > Enter y y y y y y y 
+(7 instances total)
+
+1.5 : Doing commands in Emacs
+M-x m k d i r Enter j u n k Enter 
+M-x c o m p i l e BACKSP BACKSP BACKSP BACKSP BACKSP BACKSP BACKSP BACKSP g c c SP h e l l o . c Enter 
+C-x b h e l l o - o u t 
+C-u M-! . / a . o u t
+
+#include <stdio.h>
+int
+main (void)
+{
+    char n = '\n';
+    char b = '\\';
+    char q = '"';
+    char const *p = "#include <stdio.h>%cint%cmain (void)%c{%c  char n = '%cn';%c  char b = '%c%c';%c  char q = '%c';%c  char const *p = %c%s%c;%c  printf (p, n, n, n, n, b, n, b, b, n, q, n, q, p, q, n, n, n, n);%c  return 0;%c}%c";
+    printf (p, n, n, n, n, b, n, b, b, n, q, n, q, p, q, n, n, n, n);
+    return 0;
+}
+
+
+C-SP M-> M-w C-x C-f k e y 1 . t x t C-y
+
+
+1.6: Running Elisp code
+C-x b Enter 
+( r a n d o m ) C-j 
+( s e t q SP x ( r a n d o m ) ) C-j 
+( s e t q SP y ( r a n d o m ) ) C-j ( * SP x SP y ) C-j 
+Product is -1723046712265834060 which is not the correct answer because the answer is smaller than x, as there
+is overflow occurring.
+
+M-: (* SP x SP Y) Enter
+
+The result is the same except that there are two extra values that are included,
+which are the octo and hexadecimal values of the number
+
+The integers are not truly random in a mathematical sense because these
+languages (like Elisp) have memory limitations and therefore there are finite
+numbers of integers to choose from.
+
+For the probability, the product of the two integers must be within the range of
+62 bit signed integers, meaning between -2^61 and 2^61-1. To calculate the
+probability, we will first set x. This means that the other number must be   
+y (when x>0) 2^-61/x to (2^61-1)/x, or 2^-61/x + (2^61)/x + 1 values  
+y (when x=0) 2^-61 to 2^61-1, or 2^62 values  
+y (when x<0) 2^-61/-x to (2^61-1)/-x, or 2^-61/x+ 2^61/-x + 1 values.
+
+After finding the sum of this, we can divide that by 2^62 * 2^62 = 2*124 (total
+possibilities) to get the probability
+
+We can simplify this by saying 
+y when(x>0) 1 + 2^62/x 
+y when (x=0) 2^62 
+y when (x<0) 1 + 2^62/-x
+
+Writing this as a function, f(x), and taking the integral of it, we can find the
+approximate sum. Because this is an approximation, and our simplified statement
+has more values, we obtain an upper bound of the original sum.
+
+Therefore, the probability that the product of two random integeres is
+mathematically incorrect is 1 - answer, or 1 - 1.8 * 10^-17
+
+
+
+
+

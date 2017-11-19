@@ -1,0 +1,88 @@
+Luca Matsumoto
+CS35L Lab 5
+
+In this lab, we want to create two programs that utilize both unbuffered and buffered I/O to mimic the tr command. For
+buffered I/O we will use commands getchar and putchar to read and write to stdin and stdout and for unbuffered, we will
+use commands read and write. The program will take two arguments, "from" and "two" and transliterate bytes. 
+
+In tr2b.c, we use getchar to read each byte and putchar to write each byte. 
+
+In tr2u.c, we use read and write, modifying those commands to only read one byte at a time. Both of the codes look 
+similar as the error checking is done in the same way. We only modify the getchar and putchar to fit the unbuffered I/O
+methods of read and write.
+
+We can test each program by creating an executable through gcc. 
+Command: gcc tr2b.c -o tr2b and gcc tr2u.c -o tr2u
+
+We first create a file that is 5 million bytes in size. We do this through the command
+dd if=/dev/urandom of=output.txt bs=5K count=1000
+This creates a file out.txt that is 5 million bytes in size.
+
+
+Now with our programs we use the strace command to compare
+From the slides, we can use the command to copy one file to another
+strace -o strace_buf_output ./tr2b ab cd < output.txt > buffer.txt
+
+using man strace, we can look at what the -o option does. 
+The -o filename option writes the trace output to the file rather than to stderr
+This means that we can check how many lines are in the file to see approximately how many system calls were made.
+
+cat strace_buf_output | wc -l outputs 31, meaning that there were about 31 system calls made.
+
+Similarly, we can use this same command for our unbuffered tr2u program.
+
+commands:
+strace -o strace_unbuf_output ./tr2u ab cd < output.txt > unbuffer.txt
+cat strace_unbuf_output | wc -l
+
+Our immediate observation is that this takes a considerable amount of time to run.
+Our wc -l command outputs 5160138 lines, meaning that there were a signifcant amount of system calls that were made.
+
+Next, we do the same thing without copying a file to another and instead directly to terminal.
+
+strace -o strace_buf_output2 ./tr2b ab cd < output.txt
+cat strace_buf_output2 | wc -l
+
+These lines output 32, which means that there were about 32 system calls made
+
+We do the same thing with our tr2u program as well
+
+strace -o strace_unbuf_output2 ./tr2b ab cd < output.txt
+cat strace_unbuf_output2 | wc -l
+
+These lines return 5160277, which measnt that there were about 5160277 system calls made
+
+Overall observations: The unbuffered I/O makes significantly more system calls than the buffered. However, copying to the terminal also makes
+more system calls than copying to a file because it needs additional system calls to print to the screen.
+
+For the next part of the lab, we use the time command to measure the speed of the program
+
+time ./tr2b ab cd < output.txt > buff.txt
+real    0m0.003s
+user    0m0.001s
+sys 0m0.000s
+
+time ./tr2u ab cd < output.txt > unbuff.txt
+real    0m1.877s
+user    0m0.174s
+sys 0m1.700s
+
+time ./tr2b ab cd < output.txt
+real    0m0.003s
+user    0m0.000s
+sys 0m0.001s
+
+time ./tr2u ab cd < output.txt
+real    0m1.714s
+user    0m0.219s
+sys 0m1.493s
+
+Overall, these results illustrate that getchar and putchar (buffered I/O) use buffers to make significantly less system calls.
+
+
+
+
+
+    
+
+

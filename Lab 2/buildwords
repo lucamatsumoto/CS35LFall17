@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#beginning text
+sed '/<!DOCTYPE/,/<\/font><\/td>/d' |
+
+#delete the text after the words
+sed '/<\/table>/,/<\/html>/d' |
+
+#delete English words
+sed '/<tr>/,/<\/td>/d' |
+
+#remove html tags (from powerpoint)
+sed 's/<[^>]*>//g' |
+
+#delete empty lines between words
+sed '/^\s*$/d' |
+
+#delete any carriage returns
+tr -d '\r' |
+
+#treat upper case letters as if they are lower case
+tr '[A-Z]' '[a-z]' |
+
+#replace grave accent with with apostrophe
+tr '`' "'" |
+
+#clear the spaces before and after the words '\s' matches whitespace
+sed 's/^\s\+//g' |
+sed 's/\s\+$//g' |
+
+#clear comma and space and separate into two words
+sed 's/\,/\n/g' |
+
+#separate words
+sed 's/ /\n/g' |
+
+#delete any words that are not Hawaiian use double quotes instead for '
+sed "/^.*[^pk'mnwlhaeiou].*$/d" |
+
+#sort alphabetically
+sort -u

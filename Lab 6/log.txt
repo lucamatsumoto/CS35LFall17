@@ -1,0 +1,62 @@
+Luca Matsumoto
+Lab 6
+
+First check whether our sort command version is up to date by using the command
+sort --version
+We update the sort command with 
+export PATH=/usr/local/cs/bin:$PATH, which makes the sort version 8.28
+
+We must generate a file that contains 10 million random single-precision floating point numbers
+We can use this through calling the od -tf -N command and taking /dev/urandom as the standard input
+
+Looking at the man pages for od, we specify the size for an input, meaning that we can use od -t fF where 
+the capital F represents a float.
+
+Additionally, looking at the man page, we can format out the addresses by using the -An command
+
+Because a single-precision float is 4 bytes, we must output 40 million bytes. Or 40 MB of data.
+
+With the tr command, we can convert all spaces into new lines
+tr -s ' ' '\n'
+Then, with the sed command, we will get rid of any empty lines
+sed '/^$/d' 
+By piping all of those together we get the command
+od -An -t fF -N 40000000 < /dev/urandom | tr -s ' ' '\n' | sed '/^$/d' > bigFile.txt
+This command stores this in a file called bigFile.txt
+
+For the next part, we time the sort command using time -p along with sort -g and output the file to /dev/null
+
+time -p sort -g bigFile.txt > /dev/null
+
+real 23.10
+user 115.04
+sys 0.47
+
+For 1 thread
+time -p sort -g --parallel=1 bigFile.txt > /dev/null
+real 112.03
+user 111.79
+sys 0.23
+
+For 2 threads
+time -p sort -g --parallel=2 bigFile.txt > /dev/null
+real 59.02
+user 112.22
+sys 0.24
+
+For 4 threads
+time -p sort -g --parallel=4 bigFile.txt > /dev/null
+real 33.80
+user 113.25
+sys 0.32
+
+For 8 threads
+time -p sort -g --parallel=8 bigFile.txt > /dev/null
+real 21.74
+user 114.74
+sys 0.46
+
+Overall, it seems as if the user times stay within the 110-115 second range. 
+Because there are multiple threads being run at once, more system calls will be made,
+so the sys time is longest for 8 threads. The execution (real) time with no parallel option
+and the time with parallel=8 option has 

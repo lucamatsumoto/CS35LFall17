@@ -1,0 +1,152 @@
+CS35L Fall 2017 Lab 3
+Luca Matsumoto
+
+To fix the ls -l problem, we must first download Coreutils 7.6 onto our home 
+directory.
+Command: wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz 
+
+we then unzip the tarball by using the command
+tar -xzvf coreutils-7.6.tar.gz
+
+Create a new directory to install Coreutils 7.6 onto and then reproduce the 
+bug.
+Command: mkdir coreutilsInstall
+
+We then enter the coreutils-7.6 directory by returning to the home directory
+and using the command cd coreutils-7.6
+
+Read the INSTALL file by using the command: more INSTALL
+scroll down to the section where it explains how to compile with the --prefix
+flag. 
+
+The path we want coreutils-7.6 to be installed to is 
+/u/cs/ugrad/ruka/coreutilsInstall (this command does not work on lnxsrv09 but
+does work on lnxsrv07)
+
+./configure --prefix=/u/cs/ugrad/ruka/coreutilsInstall 
+
+We then compile and install this in our coreutilsInstall directory by using
+the commands:
+make (to compile)
+make install (searches for install within the Makefile and executes)
+
+Run the command ./ls -l under the ~/coreutilsInstall/bin directory to reproduce
+our bug.
+
+In the coreutils-7.6 directory, create a patch file by copy-pasting the patch
+into a text editor. (Vim)
+Command: vi patchFile
+
+Then, patch the file by using the command
+patch -p1 < patchFile
+
+We could also use p0 here because both p0 and p1 do not change the paths. Used 
+the man patch command and looked at the pnum section.
+
+Now, with the patch applied we can recompile the changed parts through using
+the make command.
+Cd . 
+make (to recompile with efficiency)
+
+The make command outputs the following lines:
+
+make  all-recursive
+make[1]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6'
+Making all in lib
+make[2]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/lib'
+make  all-recursive
+make[3]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/lib'
+make[4]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/lib'
+make[4]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/lib'
+make[3]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/lib'
+make[2]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/lib'
+Making all in src
+make[2]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/src'
+make  all-am
+make[3]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/src'
+  CC     ls.o
+  CCLD   dir
+  CCLD   vdir
+  CCLD   ls
+make[3]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/src'
+make[2]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/src'
+Making all in doc
+make[2]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/doc'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/doc'
+Making all in man
+make[2]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/man'
+  GEN    dir.1
+  GEN    vdir.1
+  GEN    ls.1
+make[2]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/man'
+Making all in po
+make[2]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/po'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/po'
+Making all in tests
+make[2]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/tests'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/tests'
+Making all in gnulib-tests
+make[2]: Entering directory
+`/w/home.15/cs/ugrad/ruka/coreutils-7.6/gnulib-tests'
+make  all-recursive
+make[3]: Entering directory 
+`/w/home.15/cs/ugrad/ruka/coreutils-7.6/gnulib-tests'
+make[4]: Entering directory
+`/w/home.15/cs/ugrad/ruka/coreutils-7.6/gnulib-tests'
+make[4]: Nothing to be done for `all-am'.
+make[4]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/gnulib-tests'
+make[3]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/gnulib-tests'
+make[2]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6/gnulib-tests'
+make[2]: Entering directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6'
+make[2]: Nothing to be done for `all-am'.
+make[2]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6'
+make[1]: Leaving directory `/w/home.15/cs/ugrad/ruka/coreutils-7.6'
+
+Make all-recursive: This checks the directories within coreutils-7.6 to see if 
+there were any changes to the source files following the patch. In this case,
+the only change was within the src directory. (ls.c)
+
+The make command only recompiles files that need to recompiled. Additionally, 
+we do not install the patch because we want to keep two separate directories 
+where one has the broken version and one is fixed.
+
+
+For the next part of the lab, we return to the coreutilsInstall directory:
+cd ~/coreutilsInstall
+
+We create two files, one "old" and one new by using the touch command.
+We can mark a file's date by using the touch command:
+touch -t 201101311759.30 oldFile
+touch newFile
+
+Then, because the broken version is stored in ~/coreutilsInstall/bin, we run the
+command.
+~/coreutilsInstall/bin/ls -l
+
+Which outputs:
+drwxr-xr-x 2 ruka csugrad 8192 2017-10-16 23:43 bin
+drwxr-xr-x 3 ruka csugrad 4096 2017-10-16 23:43 lib
+-rw-r--r-- 1 ruka csugrad    0 2017-10-17 01:32 newFile
+-rw-r--r-- 1 ruka csugrad    0 2011-01-31 17:59 oldFile
+drwxr-xr-x 5 ruka csugrad 4096 2017-10-16 23:43 share
+
+We then check if the patch works on the other directory.
+
+Since the fixed version is stored in ~/coreutils-7.6/src, we run the command
+~/coreutils-7.6/src/ls -l
+
+This outputs:
+drwxr-xr-x 2 ruka csugrad 8192 Oct 16 23:43 bin
+drwxr-xr-x 3 ruka csugrad 4096 Oct 16 23:43 lib
+-rw-r--r-- 1 ruka csugrad    0 Oct 17 01:32 newFile
+-rw-r--r-- 1 ruka csugrad    0 Jan 31  2011 oldFile
+drwxr-xr-x 5 ruka csugrad 4096 Oct 16 23:43 share
+
+This shows that the patch works and that ls -l is fixed.
+
+
+
+

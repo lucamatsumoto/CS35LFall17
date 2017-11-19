@@ -1,0 +1,156 @@
+Luca Matsumoto  
+CS35L Lab 2
+
+Change the locale to POSIX locale with command: export LC_ALL='C'
+
+Create a working directory to store our files in: mkdir cs35l Change the current
+directory to this newly made directory: cd cs35l 
+Command: sort/usr/share/dict/words > words  
+Stores the sorted words into a file called words (redirect)
+
+Check whether the words were properly sorted by using the commands head words
+and tail words.  This checks the bottom and top of the list to see if they were
+sorted properly
+
+Make a text file containing the html elements of this page: Right click on the
+page and click view page source, then copy and paste the code into a text file
+vi fall_lab2.txt then paste the code into the text editor
+
+Command 1: cat fall_lab2.txt | tr -c 'A-za-z' '[\n*]': Because the -c option
+means the complement of set1 (in this case 'A-za-z'), set1 would represent
+everything that is not an alphabetical character. In set 2, the '*' character
+copies the length of set1, which is 52. (52 '\n''s). Essentially, what this
+command does is filter out all of the non-alphabetical characters and replaces
+them with a new line.
+
+
+Command 2: cat fall_lab2.txt | tr -cs 'A-Za-z' '[\n*]': The -s option replaces
+each repeated sequential character with one instance of that character in set1,
+and the -c option means the complement of set1. This means that all repeated,
+non-alphabetical characters are replaced with one new line. This means that
+there should only be one new line after every entry.
+
+Command 3: cat fall_lab2.txt | tr -cs 'A-Za-z' '[\n*]' | sort: This command is
+the same as the one before, except that it is pipelined with the sort command.
+This means that the command sorts the entries in the text file after all non-
+alphabetical characters are replaced with a new line and then the repeated non-
+alphabetical characters, in particular new lines, are replaced with one instance
+of that character.
+
+Command 4: cat fall_lab2.txt | tr -cs 'A-Za-z' '[\n*]' | sort -u: Looking at the
+man pages for 'sort', we see that the -u option stands for unique and is the
+same as the uniq command in unix. The man page states that without -c, "output
+only the first of an equal run." This means that all repeated characters are
+replaced with one instance of that character, meaning that every word in the
+text file should be unique.
+
+Command 5: cat fall_lab2.txt | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words
+Using the command 'man comm', we look at the man pages for the comm command. The
+comm command produces a three column output where column one contains lines that
+are unique to file1, column two contains lines that are unique to file2, and
+column three contains lines that are shared by both files. Here, the '-'
+character represents std input, which, in this case, is the sorted non-
+duplicated words after sort -u. The second column is extremely long because the
+words in the dictionary have a lot more content
+
+Command 6: cat fall_lab2.txt | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 -
+words: Once again, look at the man pages for comm, we see that the -23 option
+means that columns 2 and 3 get suppressed so only columnn 1 is shown. This means
+that we see only the sorted words that are unique to the standard input.
+
+Hawaiian Spell-checker
+
+Use wget http://mauimapp.com/moolelo/hwnwdseng.htm to obtain a copy of the web
+page in the file hwnwdseng.htm.  First, we need the extraneous lines that do not
+have anything to do with the dictionary from the beginning and end of the file.
+Because tr is character-based, we can use sed to delete lines.
+
+We delete the beginning of the text with the command  sed
+'/<!DOCTYPE>/,/<\/font><\/td>/d': this deletes everything starting from
+<!DOCTYPE> to </font></td>
+
+Then delete the end of the text with the command. sed '/<\/table>/,/<\/html>/d'
+
+Because all of the English words come first, all of the words are between the
+<tr> bracket and the first close </td> bracket.  This means that we can simply
+delete everything between those lines with the command sed '/<tr>/,/<\/td>/d'
+
+Then, we can delete all of the tags around the Hawaiian words through using
+regular expressions. All tags start with '<' and end with '>' with characters in
+between the signs. Therefore, we can use the sed command to delete the tags with
+the command sed 's/<[^>]*>//g': The regular expression ^> inside square brackets
+means everything except the '>' character. * means 0 or more times and we
+replace it with nothing, as indicated by //. The 'g' at the end indicates global
+meaning that every word in the text is replaced.
+
+However, there will be empty lines between words that we would need to delete.
+Because the '\s' character represents whitespace, we can easily delete this
+using a sed command sed '/^\s*$/d': the '^' character means that it starts with
+a whitespace, and the '$' means it ends that way as well.
+
+Next, we can start with something simply like deleting all of the carriage
+returns in the file. Using the tr command with the -d option (found using the
+man pages), we can delete every occurence of a carriage return tr -d '\r'
+
+Next, replace all of the uppercase letters with lowercase ones. This can be done
+with tr since it is character based. tr '[A-Z]' '[a-z]'
+
+Next, replace the grave accents with an apostrophe using a similar command  tr
+'`' "'": We must use double quotes so that it recognizes the apostrophe
+character.
+
+However, there are still whitespaces at the beginning and end of each word that
+now must be deleted. Using the sed command, we can delete this whitespace sed
+'s/^\s\+//g': This deletes the whitespace at the beginning of a word sed
+'s/\s\+$//g': This deletes the whitespace at the end of the word
+
+Next, we can separate the words split by commas into two words by replace the
+comma character with a new line. Instead of using tr, it is better to use sed
+because after every comma is a space character. Therefore, we can use the
+command sed 's/[, ]\+/\n/g'
+
+However, there are still some misplaced English words in the dictionary that we
+must delete. Because all Hawaiian words include p, k, ', m, n, w, l, h, a, e, i,
+o, and u we can delete any words that do not contain those characters. We can
+use the sed command with regular expressions to delete these words. sed
+"/^.*[^pk'wnwlhaeiou].*$/d": This command deletes any words not containing those
+characters
+
+Finally, we will sort the words using the sort command, and make sure that there
+are no repeats by using the -u option. sort -u
+
+Using the "English spell checker" that we made through the very first command,
+we can check the number of "misspelled" English words cat fall_lab2.txt | tr -cs
+'A-Za-z' '[\n*]' | sort -u | comm -23 - words > missedEnglish wc -l
+missedEnglish This command outputs 79.
+
+We make a "Hawaiian spell checker" implementation of this through the command
+cat fall_lab2.txt | tr -cs "pk'mnwlhaeiou" '[\n*]' sort -u | comm -23 >
+missedHawaiian wc -l missedHawaiian This command outputs 199.
+
+We can now compare the two files to get words misspelled in English but not
+Hawaiian  comm -23 missedEnglish missedHawaiian | wc -w This command outputs 74.
+Examples include: Eword, eggert, htm, SEASnet, and wiki
+
+We can use a similar command to do the opposite (Hawaiian but not English) comm
+-13 missedEnglish missedHawaiian | wc -w This command outputs 194. 
+Examples include: uppe, uppo, we, pelle, and olumn
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

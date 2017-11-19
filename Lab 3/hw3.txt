@@ -1,0 +1,42 @@
+HW3
+
+1) The case_long_iso_time_style: line is part of a label for a goto command and
+it is also repeated twice. This line is also part of a switch-case statement.
+Because it is repeated twice and it is a switch statement, it would have simply
+fallen through to the next case of case_long_iso_time_style. This means that we
+can remove this line without causing any problems. It was most likely removed 
+in order to avoid confusion and clean up code.
+
+2) If a company adopt's Brady's patch, they need to be careful for translations
+between non-English users. If an international user within the company
+is not accustomed to that format, then it will be difficult to communicate 
+within the company. Additionally, if the function dcgettext does not recognize
+a translation, it will return the same value as long_time_format[i]. Therefore,
+for locales that do not have translations, data can be returned in a language
+that a user cannot understand. This would add to the company confusion.
+
+3) The /dev/null file is basically an empty file. Running the script, we are
+given this message.
+
+File "/usr/lib64/python2.7/random.py", line 274, in choice
+    return seq[int(self.random() * len(seq))]  # raises IndexError if seq is 
+    empty
+IndexError: list index out of range
+
+This randline script reads every line of the file and selects the lines that are
+randomly selected. As seen by the error message displayed, if the file is empty,
+then it displays an IndexError.
+
+4) To run the python3 command we must first change the path by using the command
+export PATH=/usr/local/cs/bin:$PATH. Running this script on python3 gives the
+error message, 
+
+ File "randline.py", line 65
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax
+
+This is because python 3 has deprecated automatic tuple unpacking, meaning the 
+use of a tuple as a parameter in a function to have a sequence argument 
+automatically unpacked. The solution would be to use a single parameter instead,
+with only a reference to the multiple arguments. 
